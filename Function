@@ -1,0 +1,67 @@
+'====================================================================
+' Nom de la fonction : MorseEnTexte
+' Catégorie : Personnalisée / Morse
+' Description : Décode une chaîne en Morse vers du texte clair.
+' Paramètres :
+'   morseTexte (String) : code Morse à décoder (espaces entre les lettres, "/" entre les mots).
+' Retour :
+'   (String) : texte décodé.
+' Exemple :
+'   =MorseEnTexte("-... --- -. .--- --- ..- .-.") → "BONJOUR"
+'====================================================================
+Public Function MorseEnTexte(morseTexte As String) As String
+    Dim lettres(), morse()
+    Dim i As Integer, j As Integer
+    Dim symboles() As String
+    Dim mot As String, result As String
+
+    ' --- Table de correspondance standard ---
+    lettres = Array("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z", _
+                    "0","1","2","3","4","5","6","7","8","9"," ", _
+                    ".",",","?","!",";",":","/","-","(",")","'","""","@","=","+","_")
+
+    morse   = Array(".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-", _
+                    ".-.","...","-","..-","...-",".--","-..-","-.--","--..", _
+                    "-----",".----","..---","...--","....-",".....","-....","--...","---..","----.","/", _
+                    ".-.-.-","--..--","..--..","-.-.--","-.-.-.","---...","-..-.","-....-","-.--.","-.--.-",".----."," .-..-.",".--.-.","-...-",".-.-.","..--.-")
+
+    ' --- Découpage du Morse en symboles séparés par des espaces ---
+    ' Remplace les séparateurs multiples par un seul espace
+    morseTexte = Trim(Replace(morseTexte, "  ", " "))
+    symboles = Split(morseTexte, " ")
+
+    result = ""
+    i = 0
+
+    Do While i <= UBound(symboles)
+        mot = symboles(i)
+
+        ' Si on détecte la séquence C + apostrophe + H
+        If i <= UBound(symboles) - 2 Then
+            If symboles(i) = "-.-." And symboles(i + 1) = ".----." And symboles(i + 2) = "...." Then
+                result = result & "C'H"
+                i = i + 3
+                GoTo NextSymbol
+            End If
+        End If
+
+        ' Sinon, recherche directe dans la table
+        For j = LBound(morse) To UBound(morse)
+            If morse(j) = mot Then
+                result = result & lettres(j)
+                Exit For
+            End If
+        Next j
+
+        ' Si non trouvé → ?
+        If j > UBound(morse) Then
+            result = result & "?"
+        End If
+
+        i = i + 1
+
+NextSymbol:
+    Loop
+
+    MorseEnTexte = result
+End Function
