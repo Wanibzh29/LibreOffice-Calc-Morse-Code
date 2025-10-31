@@ -1,0 +1,87 @@
+'====================================================================
+' Nom de la fonction : TexteEnMorse
+' Catégorie : Personnalisée / Morse
+' Description : Convertit le texte saisi en code Morse international.
+' Paramètres :
+'   texte (String) : texte à convertir en Morse.
+' Retour :
+'   (String) : code Morse correspondant, lettres séparées par des espaces.
+' Exemple :
+'   =TexteEnMorse("Bonjour") → "-... --- -. .--- --- ..- .-."
+'====================================================================
+Public Function TexteEnMorse(texte As String) As String
+    Dim lettres(), morse()
+    Dim i As Integer, j As Integer
+    Dim lettre As String, result As String
+
+    ' --- Normalisation des accents ---
+    texte = UCase(texte)
+    texte = Replace(texte, "À", "A")
+    texte = Replace(texte, "Â", "A")
+    texte = Replace(texte, "Ä", "A")
+    texte = Replace(texte, "Ç", "C")
+    texte = Replace(texte, "É", "E")
+    texte = Replace(texte, "È", "E")
+    texte = Replace(texte, "Ê", "E")
+    texte = Replace(texte, "Ë", "E")
+    texte = Replace(texte, "Î", "I")
+    texte = Replace(texte, "Ï", "I")
+    texte = Replace(texte, "Ô", "O")
+    texte = Replace(texte, "Ö", "O")
+    texte = Replace(texte, "Ù", "U")
+    texte = Replace(texte, "Û", "U")
+    texte = Replace(texte, "Ü", "U")
+    texte = Replace(texte, "Ÿ", "Y")
+
+    ' --- Normalisation des apostrophes typographiques ---
+    texte = Replace(texte, "’", "'")
+    texte = Replace(texte, "‘", "'")
+
+    ' --- Table de correspondance ---
+    lettres = Array("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z", _
+                    "0","1","2","3","4","5","6","7","8","9"," ", _
+                    ".",",","?","!",";",":","/","-","(",")","'","""","@","=","+","_")
+    morse   = Array(".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-", _
+                    ".-.","...","-","..-","...-",".--","-..-","-.--","--..", _
+                    "-----",".----","..---","...--","....-",".....","-....","--...","---..","----.","/", _
+                    ".-.-.-","--..--","..--..","-.-.--","-.-.-.","---...","-..-.","-....-","-.--.","-.--.-",".----."," .-..-.",".--.-.","-...-",".-.-.","..--.-")
+
+    result = ""
+    i = 1
+    Do While i <= Len(texte)
+        ' --- Détection du graphème C'H / C’H ---
+        If i <= Len(texte) - 2 Then
+            Dim triplet As String
+            triplet = Mid(texte, i, 3)
+            If triplet = "C'H" Or triplet = "C’H" Then
+                ' Vérifie si la lettre suivante est une voyelle
+                Dim nextChar As String
+                nextChar = ""
+                If i + 3 <= Len(texte) Then nextChar = Mid(texte, i + 3, 1)
+                If InStr("AEIOUY", nextChar) = 0 Then
+                    ' C'H isolé → graphème breton unique
+                    result = result & "-.-. .----. .... "  ' C + apostrophe + H
+                    i = i + 3
+                    GoTo NextChar
+                End If
+            End If
+        End If
+
+        ' --- Cas général : caractère normal ---
+        lettre = Mid(texte, i, 1)
+        For j = LBound(lettres) To UBound(lettres)
+            If lettres(j) = lettre Then
+                result = result & morse(j) & " "
+                Exit For
+            End If
+        Next j
+        If j > UBound(lettres) Then
+            result = result & "? "
+        End If
+
+NextChar:
+        i = i + 1
+    Loop
+
+    TexteEnMorse = Trim(result)
+End Function
